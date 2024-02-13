@@ -1,4 +1,4 @@
-# Asset Refund (using Axiom Client SDK)
+# Unsupported Asset Refund
 
 This example allows users to claim a refund of UNI token sent to the specified address (currently [0xe534b1d79cB4C8e11bEB93f00184a12bd85a63fD](https://sepolia.etherscan.io/address/0xe534b1d79cB4C8e11bEB93f00184a12bd85a63fD)) on the Sepolia testnet. Users utilize a data-fetching layer on top of Axiom to prove that their account matches some parameters before submitting a Query. In this case, the parameters are that the user has sent UNI to the specified address. The entire amount in UNI is refunded, and a refund can be claimed exactly once for each transaction. Currently, only the most recent transaction can be refunded.
 
