@@ -6,7 +6,7 @@ import { Ownable } from "@openzeppelin-contracts/access/Ownable.sol";
 
 import { AxiomV2Client } from "@axiom-crypto/v2-periphery/client/AxiomV2Client.sol";
 
-contract AssetRefund is AxiomV2Client, Ownable {
+contract UnsupportedAssetRefund is AxiomV2Client, Ownable {
     event ClaimRefund(address indexed user, uint256 indexed queryId, uint256 transferValue, bytes32[] axiomResults);
     event ClaimRefundError(address indexed user, string error);
     event AxiomCallbackQuerySchemaUpdated(bytes32 axiomCallbackQuerySchema);

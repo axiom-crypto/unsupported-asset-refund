@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import "@axiom-crypto/axiom-std/AxiomTest.sol";
 
-import { AssetRefund } from "../src/AssetRefund.sol";
+import { UnsupportedAssetRefund } from "../src/UnsupportedAssetRefund.sol";
 
 import { MockERC20 } from "./MockERC20.sol";
 
@@ -14,12 +14,10 @@ contract AssetRefundTest is AxiomTest {
         uint64 blockNumber;
         uint256 txIdx;
         uint256 logIdx;
-        address senderAddress;
-        uint256 expectedAmount;
     }
 
     address public constant UNI_SENDER_ADDR = 0x84F722ec6713E2e645576387a3Cb28cfF6126ac4;
-    AssetRefund _assetRefund;
+    UnsupportedAssetRefund assetRefund;
 
     AxiomInput public input;
     bytes32 public querySchema;
@@ -27,16 +25,10 @@ contract AssetRefundTest is AxiomTest {
     function setUp() public {
         _createSelectForkAndSetupAxiom("sepolia", 5_103_100);
 
-        input = AxiomInput({
-            blockNumber: 5_141_305,
-            txIdx: 44,
-            logIdx: 0,
-            senderAddress: address(0x84F722ec6713E2e645576387a3Cb28cfF6126ac4),
-            expectedAmount: 1e18
-        });
+        input = AxiomInput({ blockNumber: 5_141_305, txIdx: 44, logIdx: 0 });
         querySchema = axiomVm.readCircuit("app/axiom/refundEvent.circuit.ts");
 
-        _assetRefund = new AssetRefund(
+        assetRefund = new UnsupportedAssetRefund(
             axiomV2QueryAddress,
             uint64(block.chainid),
             querySchema
@@ -50,16 +42,16 @@ contract AssetRefundTest is AxiomTest {
         uint256 initialBalance = 1e18; // 1 UNI token for simplicity
         uniToken.mint(testAddress, initialBalance);
 
-        // Approve your AssetRefund contract to spend UNI tokens
-        uniToken.approve(address(_assetRefund), initialBalance);
+        // Approve your UnsupportedAssetRefund contract to spend UNI tokens
+        uniToken.approve(address(assetRefund), initialBalance);
 
         // Check the allowance
-        uint256 allowance = uniToken.allowance(testAddress, address(_assetRefund));
+        uint256 allowance = uniToken.allowance(testAddress, address(assetRefund));
         assertEq(allowance, initialBalance, "Allowance was not set correctly");
     }
 
     function test_refund() public {
-        Query memory q = query(querySchema, abi.encode(input), address(_assetRefund));
+        Query memory q = query(querySchema, abi.encode(input), address(assetRefund));
 
         q.send();
         bytes32[] memory results = q.prankFulfill();

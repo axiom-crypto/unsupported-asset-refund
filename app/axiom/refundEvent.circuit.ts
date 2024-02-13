@@ -15,16 +15,12 @@ export interface CircuitInputs {
   blockNumber: CircuitValue;
   txIdx: CircuitValue;
   logIdx: CircuitValue;
-  senderAddress: CircuitValue256;
-  expectedAmount: CircuitValue256;
 }
 
 export const defaultInputs = {
   blockNumber: 5141305,
   txIdx: 44,
   logIdx: 0,
-  senderAddress: "0x8018fe32fCFd3d166E8b4c4E37105318A84BA11b",
-  expectedAmount: 100
 }
 
 // The function name `circuit` is searched for by default by our Axiom CLI; if you decide to 
