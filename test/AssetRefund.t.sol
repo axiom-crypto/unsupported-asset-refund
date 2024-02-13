@@ -1,23 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {AxiomTest, AxiomVm} from "@axiom-crypto/v2-periphery/test/AxiomTest.sol";
-import {AssetRefund} from "../src/AssetRefund.sol";
-import {MockERC20} from "./MockERC20.sol";
+import { AxiomTest, AxiomVm } from "@axiom-crypto/axiom-std/AxiomTest.sol";
+import { AssetRefund } from "../src/AssetRefund.sol";
+import { MockERC20 } from "./MockERC20.sol";
 
 contract AssetRefundTest is AxiomTest {
-    address public constant UNI_SENDER_ADDR =
-        0x84F722ec6713E2e645576387a3Cb28cfF6126ac4;
+    address public constant UNI_SENDER_ADDR = 0x84F722ec6713E2e645576387a3Cb28cfF6126ac4;
     AssetRefund _assetRefund;
 
     function setUp() public {
         _createSelectForkAndSetupAxiom("sepolia", 5_103_100);
 
         inputPath = "app/axiom/data/inputs.json";
-        querySchema = axiomVm.compile(
-            "app/axiom/refundEvent.circuit.ts",
-            inputPath
-        );
+        querySchema = axiomVm.compile("app/axiom/refundEvent.circuit.ts", inputPath);
 
         _assetRefund = new AssetRefund(
             axiomV2QueryAddress,
@@ -37,22 +33,15 @@ contract AssetRefundTest is AxiomTest {
         uniToken.approve(address(_assetRefund), initialBalance);
 
         // Check the allowance
-        uint256 allowance = uniToken.allowance(
-            testAddress,
-            address(_assetRefund)
-        );
+        uint256 allowance = uniToken.allowance(testAddress, address(_assetRefund));
         assertEq(allowance, initialBalance, "Allowance was not set correctly");
     }
 
     function testAxiomSendQuery() public {
-        AxiomVm.AxiomSendQueryArgs memory args = axiomVm.sendQueryArgs(
-            inputPath,
-            address(_assetRefund),
-            callbackExtraData,
-            feeData
-        );
+        AxiomVm.AxiomSendQueryArgs memory args =
+            axiomVm.sendQueryArgs(inputPath, address(_assetRefund), callbackExtraData, feeData);
 
-        axiomV2Query.sendQuery{value: args.value}(
+        axiomV2Query.sendQuery{ value: args.value }(
             args.sourceChainId,
             args.dataQueryHash,
             args.computeQuery,
@@ -65,14 +54,8 @@ contract AssetRefundTest is AxiomTest {
     }
 
     function testAxiomCallback() public {
-        AxiomVm.AxiomFulfillCallbackArgs memory args = axiomVm
-            .fulfillCallbackArgs(
-                inputPath,
-                address(_assetRefund),
-                callbackExtraData,
-                feeData,
-                UNI_SENDER_ADDR
-            );
+        AxiomVm.AxiomFulfillCallbackArgs memory args =
+            axiomVm.fulfillCallbackArgs(inputPath, address(_assetRefund), callbackExtraData, feeData, UNI_SENDER_ADDR);
 
         axiomVm.prankCallback(args);
     }
