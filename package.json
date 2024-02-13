@@ -1,0 +1,28 @@
+{
+  "name": "asset-refund-example",
+  "version": "1.0.0",
+  "description": "An asset refund example dApp built with Axiom.",
+  "main": "index.js",
+  "scripts": {
+    "test": "forge test",
+    "circuit:compile": "axiom circuit compile app/axiom/refundEvent.circuit.ts",
+    "dev": "cd app && $npm_execpath run dev"
+  },
+  "keywords": [
+    "Axiom",
+    "Zero Knowledge",
+    "ZK Circuit",
+    "Asset Refund",
+    "Example dApp"
+  ],
+  "author": "Intrinsic Technologies",
+  "license": "MIT",
+  "dependencies": {
+    "@axiom-crypto/client": "2.0.3",
+    "dotenv": "^16.3.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
