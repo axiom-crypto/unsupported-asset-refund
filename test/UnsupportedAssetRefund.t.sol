@@ -12,9 +12,9 @@ contract UnsupportedAssetRefundTest is AxiomTest {
 
     struct AxiomInput {
         uint64 numClaims;
-        uint64[] blockNumber;
-        uint64[] txIdx;
-        uint64[] logIdx;
+        uint64[] blockNumbers;
+        uint64[] txIdxs;
+        uint64[] logIdxs;
     }
 
     address public constant UNI_SENDER_ADDR = 0x84F722ec6713E2e645576387a3Cb28cfF6126ac4;
@@ -26,7 +26,18 @@ contract UnsupportedAssetRefundTest is AxiomTest {
     function setUp() public {
         _createSelectForkAndSetupAxiom("sepolia", 5_103_100);
 
-        input = AxiomInput({ numClaims: 1, blockNumber: 5_141_305, txIdx: 44, logIdx: 0 });
+        uint64[] memory blockNumbers = new uint64[](10);
+        uint64[] memory txIdxs = new uint64[](10);
+        uint64[] memory logIdxs = new uint64[](10);
+        blockNumbers[0] = 5_141_305;
+        txIdxs[0] = 44;
+        logIdxs[0] = 0;
+        for (uint256 idx = 1; idx < 10; idx++) {
+            blockNumbers[idx] = 5_141_305;
+            txIdxs[idx] = 44;
+            logIdxs[idx] = 0;
+        }
+        input = AxiomInput({ numClaims: 1, blockNumbers: blockNumbers, txIdxs: txIdxs, logIdxs: logIdxs });
         querySchema = axiomVm.readCircuit("app/axiom/unsupportedAssetRefund.circuit.ts");
 
         assetRefund = new UnsupportedAssetRefund(

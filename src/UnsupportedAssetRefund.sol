@@ -9,7 +9,6 @@ import { IUnsupportedAssetRefund } from "./interfaces/IUnsupportedAssetRefund.so
 
 contract UnsupportedAssetRefund is IUnsupportedAssetRefund, AxiomV2Client, Ownable {
     bytes32 public constant TRANSFER_SCHEMA = 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef;
-    address public constant MY_ADDRESS = 0xe534b1d79cB4C8e11bEB93f00184a12bd85a63fD;
 
     uint64 public immutable callbackSourceChainId;
     bytes32 public axiomCallbackQuerySchema;
@@ -46,13 +45,15 @@ contract UnsupportedAssetRefund is IUnsupportedAssetRefund, AxiomV2Client, Ownab
         uint256 startClaimId = uint256(axiomResults[5]);
 
         require(fromAddress == callerAddr, "UnsupportedAssetRefund: Invalid fromAddress");
-        require(toAddress == MY_ADDRESS, "UnsupportedAssetRefund: Invalid toAddress");
-        require(lastClaimedId[tokenContractAddress][fromAddress][toAddress] < startClaimId, "UnsupportedAssetRefund: Already claimed");
+        require(
+            lastClaimedId[tokenContractAddress][fromAddress][toAddress] < startClaimId,
+            "UnsupportedAssetRefund: Already claimed"
+        );
 
-        require(IERC20(tokenContractAddress).transferFrom(MY_ADDRESS, callerAddr, transferValue), "Refund failed");
         lastClaimedId[tokenContractAddress][fromAddress][toAddress] = endClaimId;
-
         emit ClaimRefund(callerAddr, queryId, transferValue, axiomResults);
+
+        require(IERC20(tokenContractAddress).transferFrom(toAddress, fromAddress, transferValue), "Refund failed");
     }
 
     function _validateAxiomV2Call(

@@ -12,7 +12,7 @@ import {
   mulAdd,
   selectFromIdx,
   sub,
-  sum,
+  add,
   or,
   isZero,
   getReceipt,
@@ -32,8 +32,8 @@ export interface CircuitInputs {
 
 export const defaultInputs = {
   numClaims: 1,
-  blockNumbers: [5141305, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  txIdxs: [44, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  blockNumbers: [5141305, 5141305, 5141305, 5141305, 5141305, 5141305, 5141305, 5141305, 5141305, 5141305],
+  txIdxs: [44, 44, 44, 44, 44, 44, 44, 44, 44, 44],
   logIdxs: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
 
@@ -50,7 +50,7 @@ export const circuit = async (inputs: CircuitInputs) => {
   if (inputs.blockNumbers.length !== MAX_NUM_CLAIMS || inputs.txIdxs.length !== MAX_NUM_CLAIMS || inputs.logIdxs.length !== MAX_NUM_CLAIMS) {
     throw new Error("blockNumbers or txIdxs or logIdxs does not match MAX_NUM_CLAIMS");
   }
-  if (inputs.numClaims > MAX_NUM_CLAIMS) {
+  if (inputs.numClaims.value() > MAX_NUM_CLAIMS) {
     throw new Error("Number of claims exceeds maximum");
   }
   checkLessThan(inputs.numClaims, constant(MAX_NUM_CLAIMS + 1));
@@ -64,7 +64,7 @@ export const circuit = async (inputs: CircuitInputs) => {
     const id = mulAdd(id_1, BigInt(2 ** 64), inputs.logIdxs[idx]);
 
     inRanges.push(inRange);
-    claimIds.push(mul(constant(id), inRange));
+    claimIds.push(mul(id, inRange));
   }
 
   for (let idx = 1; idx < MAX_NUM_CLAIMS; idx++) {
@@ -75,10 +75,10 @@ export const circuit = async (inputs: CircuitInputs) => {
 
   const lastClaimId = selectFromIdx(claimIds, sub(inputs.numClaims, constant(1)));;
 
-  let totalValue: CircuitValue;
-  let tokenContractAddress: CircuitValue;
-  let fromAddress: CircuitValue;
-  let toAddress: CircuitValue;
+  let totalValue: CircuitValue = constant(0);
+  let tokenContractAddress: CircuitValue[] = [];
+  let fromAddress: CircuitValue[] = [];
+  let toAddress: CircuitValue[] = [];
   for (var idx = 0; idx < MAX_NUM_CLAIMS; idx++) {
     const isValid = inRanges[idx];
 
@@ -89,24 +89,22 @@ export const circuit = async (inputs: CircuitInputs) => {
     const receiptAddress = await receiptLog.address();
     const transferFrom = await receiptLog.topic(1, eventSchema);
     const transferTo = await receiptLog.topic(2, eventSchema);
-    const transferValue: CircuitValue256 = await receiptLog.data(0, eventSchema);
-    if (idx === 0) {
-      tokenContractAddress = receiptAddress;
-      fromAddress = transferFrom;
-      toAddress = transferTo; 
-      totalValue = transferValue.toCircuitValue();
-    } else {
-      checkEqual(constant(0), mul(isValid, isEqual(tokenContractAddress, receiptAddress)));
-      checkEqual(constant(0), mul(isValid, isEqual(fromAddress, transferFrom)));
-      checkEqual(constant(0), mul(isValid, isEqual(toAddress, transferTo)));
-      totalValue = sum(totalValue, mul(isValid, transferValue.toCircuitValue()));
-    }
+    const transferValue: CircuitValue = (await receiptLog.data(0, eventSchema)).toCircuitValue();
+
+    tokenContractAddress[idx] = receiptAddress.toCircuitValue();
+    fromAddress[idx] = transferFrom.toCircuitValue();
+    toAddress[idx] = transferTo.toCircuitValue(); 
+    checkEqual(constant(0), mul(isValid, isEqual(tokenContractAddress[0], receiptAddress.toCircuitValue())));
+    checkEqual(constant(0), mul(isValid, isEqual(fromAddress[0], transferFrom.toCircuitValue())));
+    checkEqual(constant(0), mul(isValid, isEqual(toAddress[0], transferTo.toCircuitValue())));
+
+    totalValue = add(totalValue, mul(isValid, transferValue));    
   }
 
-  addToCallback(fromAddress);
-  addToCallback(toAddress);
+  addToCallback(fromAddress[0]);
+  addToCallback(toAddress[0]);
   addToCallback(totalValue);
-  addToCallback(tokenContractAddress);
+  addToCallback(tokenContractAddress[0]);
   addToCallback(claimIds[0]);
   addToCallback(lastClaimId);
 };
