@@ -3,12 +3,15 @@ pragma solidity 0.8.19;
 
 import "@axiom-crypto/axiom-std/AxiomTest.sol";
 
+import { IERC20 } from "@openzeppelin-contracts/token/ERC20/IERC20.sol";
 import { UnsupportedAssetRefund } from "../src/UnsupportedAssetRefund.sol";
 
-import { MockERC20 } from "./MockERC20.sol";
+uint256 constant MAX_INT = 2 ** 256 - 1;
 
 contract UnsupportedAssetRefundTest is AxiomTest {
     using Axiom for Query;
+
+    UnsupportedAssetRefund assetRefund;
 
     struct AxiomInput {
         uint64 numClaims;
@@ -17,11 +20,12 @@ contract UnsupportedAssetRefundTest is AxiomTest {
         uint64[] logIdxs;
     }
 
-    address public constant UNI_SENDER_ADDR = 0x84F722ec6713E2e645576387a3Cb28cfF6126ac4;
-    UnsupportedAssetRefund assetRefund;
-
     AxiomInput public input;
     bytes32 public querySchema;
+
+    address public constant UNI_ADDR = 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984;
+    address public constant UNI_SENDER_ADDR = 0x84F722ec6713E2e645576387a3Cb28cfF6126ac4;
+    address public constant UNI_RECEIVER_ADDR = 0xe534b1d79cB4C8e11bEB93f00184a12bd85a63fD;
 
     function setUp() public {
         _createSelectForkAndSetupAxiom("sepolia", 5_103_100);
@@ -47,22 +51,12 @@ contract UnsupportedAssetRefundTest is AxiomTest {
         );
     }
 
-    function testAssetRefundCanSpendUNI() public {
-        // Deploy Mock UNI token and allocate tokens to a test address
-        MockERC20 uniToken = new MockERC20("Uniswap Token", "UNI");
-        address testAddress = address(this); // or any other address you control
-        uint256 initialBalance = 1e18; // 1 UNI token for simplicity
-        uniToken.mint(testAddress, initialBalance);
-
-        // Approve your UnsupportedAssetRefund contract to spend UNI tokens
-        uniToken.approve(address(assetRefund), initialBalance);
-
-        // Check the allowance
-        uint256 allowance = uniToken.allowance(testAddress, address(assetRefund));
-        assertEq(allowance, initialBalance, "Allowance was not set correctly");
-    }
-
     function test_refund() public {
+        vm.prank(UNI_RECEIVER_ADDR);
+        IERC20(UNI_ADDR).approve(address(assetRefund), MAX_INT);
+
+        deal(UNI_ADDR, UNI_RECEIVER_ADDR, 100 * 1e18);
+
         Query memory q = query(querySchema, abi.encode(input), address(assetRefund));
 
         q.send();

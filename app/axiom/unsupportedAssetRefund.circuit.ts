@@ -28,6 +28,7 @@ export interface CircuitInputs {
   logIdxs: CircuitValue[];
 }
 
+/// Corresponds to: https://sepolia.etherscan.io/tx/0xc61887a5aa0d38c7a70b23c1d68d12f74255159fa2bae588fa67a016f96052bb
 export const defaultInputs = {
   numClaims: 1,
   blockNumbers: [5141305, 5141305, 5141305, 5141305, 5141305, 5141305, 5141305, 5141305, 5141305, 5141305],
