@@ -32,7 +32,7 @@ contract UnsupportedAssetRefund is IUnsupportedAssetRefund, AxiomV2Client, Ownab
         emit AxiomCallbackQuerySchemaUpdated(_axiomCallbackQuerySchema);
     }
 
-    /// @inheritdoc IAxiomV2Client
+    /// @inheritdoc AxiomV2Client
     /// @notice Gives a refund to `fromAddress` for each transfer made to `toAddress` from `fromAddress`
     ///         for the ERC-20 at `tokenContractAddress`.  Checks that the range of `claimId` used in these
     ///         transfers is valid and that the allowance of the ERC-20 at `tokenContractAddress` is sufficient.
@@ -72,10 +72,10 @@ contract UnsupportedAssetRefund is IUnsupportedAssetRefund, AxiomV2Client, Ownab
         }
     }
 
-    /// @inheritdoc IAxiomV2Client
+    /// @inheritdoc AxiomV2Client
     function _validateAxiomV2Call(
         AxiomCallbackType, /* callbackType */
-        uint64, /* sourceChainId */
+        uint64 sourceChainId,
         address, /* caller  */
         bytes32 querySchema,
         uint256, /* queryId */

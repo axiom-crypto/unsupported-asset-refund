@@ -23,6 +23,8 @@ contract UnsupportedAssetRefundTest is AxiomTest {
     AxiomInput public input;
     bytes32 public querySchema;
 
+    event RefundClaimed(address indexed token, address indexed refundee, address indexed refunder, uint256 value);
+
     address public constant UNI_ADDR = 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984;
     address public constant UNI_SENDER_ADDR = 0x84F722ec6713E2e645576387a3Cb28cfF6126ac4;
     address public constant UNI_RECEIVER_ADDR = 0xe534b1d79cB4C8e11bEB93f00184a12bd85a63fD;
@@ -51,14 +53,29 @@ contract UnsupportedAssetRefundTest is AxiomTest {
     }
 
     function test_refund() public {
+        // Prank approval from `UNI_RECEIVER_ADDR` to `assetRefund`
         vm.prank(UNI_RECEIVER_ADDR);
         IERC20(UNI_ADDR).approve(address(assetRefund), MAX_INT);
 
+        // Prank balance of `UNI_RECEIVER_ADDR`
         deal(UNI_ADDR, UNI_RECEIVER_ADDR, 100 * 1e18);
 
+        // Create a query to prove that `UNI_SENDER_ADDR` sent UNI to `UNI_RECEIVER_ADDR`
         Query memory q = query(querySchema, abi.encode(input), address(assetRefund));
 
+        // Send the query to AxiomV2Query
         q.send();
+
+        // record balances before refund
+        uint256 balanceBefore = IERC20(UNI_ADDR).balanceOf(UNI_RECEIVER_ADDR);
+
+        // Prank fulfillment from Axiom, specifying `UNI_SENDER_ADDR` as the sender of the query
         bytes32[] memory results = q.prankFulfill(UNI_SENDER_ADDR);
+
+        // record balances after refund
+        uint256 balanceAfter = IERC20(UNI_ADDR).balanceOf(UNI_RECEIVER_ADDR);
+
+        // assert that the refund was successful
+        assertEq(balanceAfter, balanceBefore - 5 * 1e16);
     }
 }
