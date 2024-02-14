@@ -7,11 +7,7 @@ import { Ownable } from "@openzeppelin-contracts/access/Ownable.sol";
 import { AxiomV2Client } from "@axiom-crypto/v2-periphery/client/AxiomV2Client.sol";
 import { IUnsupportedAssetRefund } from "./interfaces/IUnsupportedAssetRefund.sol";
 
-import "forge-std/console.sol";
-
 contract UnsupportedAssetRefund is IUnsupportedAssetRefund, AxiomV2Client, Ownable {
-    bytes32 public constant TRANSFER_SCHEMA = 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef;
-
     uint64 public immutable callbackSourceChainId;
     bytes32 public axiomCallbackQuerySchema;
 
@@ -46,17 +42,25 @@ contract UnsupportedAssetRefund is IUnsupportedAssetRefund, AxiomV2Client, Ownab
         uint256 endClaimId = uint256(axiomResults[4]);
         uint256 startClaimId = uint256(axiomResults[5]);
 
-        require(fromAddress == callerAddr, "UnsupportedAssetRefund: Invalid fromAddress");
-        require(
-            lastClaimedId[tokenContractAddress][fromAddress][toAddress] < startClaimId,
-            "UnsupportedAssetRefund: Already claimed"
-        );
+        if (fromAddress != callerAddr) {
+            revert FromAddressDoesNotMatchCaller();
+        }
+
+        if (lastClaimedId[tokenContractAddress][fromAddress][toAddress] >= startClaimId) {
+            revert ClaimIdRangeInvalid();
+        }
+
+        if (IERC20(tokenContractAddress).allowance(toAddress, address(this)) < transferValue) {
+            revert AllowanceTooSmall();
+        }
 
         lastClaimedId[tokenContractAddress][fromAddress][toAddress] = endClaimId;
-        emit ClaimRefund(callerAddr, queryId, transferValue, axiomResults);
+        emit RefundClaimed(tokenContractAddress, fromAddress, toAddress, transferValue);
 
-        console.log("Refunding %s from %s to %s", transferValue, toAddress, fromAddress);
-        require(IERC20(tokenContractAddress).transferFrom(toAddress, fromAddress, transferValue), "Refund failed");
+        bool success = IERC20(tokenContractAddress).transferFrom(toAddress, fromAddress, transferValue);
+        if (!success) {
+            revert RefundTransferFailed();
+        }
     }
 
     function _validateAxiomV2Call(
@@ -67,7 +71,11 @@ contract UnsupportedAssetRefund is IUnsupportedAssetRefund, AxiomV2Client, Ownab
         uint256, /* queryId */
         bytes calldata /* extraData */
     ) internal virtual override {
-        require(sourceChainId == callbackSourceChainId, "UnsupportedAssetRefund: sourceChainId mismatch");
-        require(querySchema == axiomCallbackQuerySchema, "UnsupportedAssetRefund: querySchema mismatch");
+        if (sourceChainId != callbackSourceChainId) {
+            revert SourceChainIdDoesNotMatch();
+        }
+        if (querySchema != axiomCallbackQuerySchema) {
+            revert QuerySchemaDoesNotMatch();
+        }
     }
 }
