@@ -5,6 +5,7 @@ solc = "0.8.19"
 libs = ["node_modules", "lib"]
 remappings = [
   "@axiom-crypto/v2-periphery/=lib/axiom-v2-periphery/src/",
+  "@axiom-crypto/axiom-std/=lib/axiom-std/src/",
   "@openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/",
   "ds-test/=lib/forge-std/lib/ds-test/src/",
   "forge-std/=lib/forge-std/src/"

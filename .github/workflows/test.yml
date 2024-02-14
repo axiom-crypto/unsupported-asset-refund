@@ -1,6 +1,11 @@
 name: tests
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - "**"
 
 env:
   FOUNDRY_PROFILE: ci
@@ -30,5 +35,6 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          export PROVIDER_URI_SEPOLIA=${{ secrets.PROVIDER_URI_SEPOLIA }}
+          forge test -vvvv
         id: test

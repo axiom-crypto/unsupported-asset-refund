@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.19;
 
-import {Script, console2} from "forge-std/Script.sol";
-import {AssetRefund} from "../src/AssetRefund.sol";
+import { Script, console2 } from "forge-std/Script.sol";
 
-contract AssetRefundScript is Script {
-    address public constant AXIOM_V2_QUERY_MOCK_SEPOLIA_ADDR =
-        0x83c8c0B395850bA55c830451Cfaca4F2A667a983;
+import { UnsupportedAssetRefund } from "../src/UnsupportedAssetRefund.sol";
+
+contract UnsupportedAssetRefundScript is Script {
+    address public constant AXIOM_V2_QUERY_MOCK_SEPOLIA_ADDR = 0x83c8c0B395850bA55c830451Cfaca4F2A667a983;
     bytes32 _querySchema;
 
     function setUp() public {
@@ -17,9 +17,8 @@ contract AssetRefundScript is Script {
     function run() public {
         vm.startBroadcast();
 
-        new AssetRefund(
+        new UnsupportedAssetRefund(
             AXIOM_V2_QUERY_MOCK_SEPOLIA_ADDR,
-            11155111,
             _querySchema
         );
 
