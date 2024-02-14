@@ -66,6 +66,6 @@ contract UnsupportedAssetRefundTest is AxiomTest {
         Query memory q = query(querySchema, abi.encode(input), address(assetRefund));
 
         q.send();
-        bytes32[] memory results = q.prankFulfill();
+        bytes32[] memory results = q.prankFulfill(UNI_SENDER_ADDR);
     }
 }

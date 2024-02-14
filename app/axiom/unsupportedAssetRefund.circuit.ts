@@ -19,8 +19,6 @@ import {
   getTx,
 } from "@axiom-crypto/client";
 
-const MAX_NUM_CLAIMS = 10;
-
 /// For type safety, define the input types to your circuit here.
 /// These should be the _variable_ inputs to your circuit. Constants can be hard-coded into the circuit itself.
 export interface CircuitInputs {
@@ -46,8 +44,10 @@ export const circuit = async (inputs: CircuitInputs) => {
   const eventSchema =
     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
+  const MAX_NUM_CLAIMS = 10;
+
   // Check that the number of claims is valid
-  if (inputs.blockNumbers.length !== MAX_NUM_CLAIMS || inputs.txIdxs.length !== MAX_NUM_CLAIMS || inputs.logIdxs.length !== MAX_NUM_CLAIMS) {
+  if (inputs.blockNumbers.length != MAX_NUM_CLAIMS || inputs.txIdxs.length != MAX_NUM_CLAIMS || inputs.logIdxs.length != MAX_NUM_CLAIMS) {
     throw new Error("blockNumbers or txIdxs or logIdxs does not match MAX_NUM_CLAIMS");
   }
   if (inputs.numClaims.value() > MAX_NUM_CLAIMS) {
@@ -69,8 +69,8 @@ export const circuit = async (inputs: CircuitInputs) => {
 
   for (let idx = 1; idx < MAX_NUM_CLAIMS; idx++) {
     const isLess = isLessThan(claimIds[idx - 1], claimIds[idx]);
-    const isLessOrZero = or(isLess, isZero(claimIds[idx]));
-    checkEqual(isLessOrZero, 1);
+    const isLessIfValid = or(isLess, isZero(inRanges[idx]));
+    checkEqual(isLessIfValid, 1);
   }
 
   const lastClaimId = selectFromIdx(claimIds, sub(inputs.numClaims, constant(1)));;
@@ -94,9 +94,9 @@ export const circuit = async (inputs: CircuitInputs) => {
     tokenContractAddress[idx] = receiptAddress.toCircuitValue();
     fromAddress[idx] = transferFrom.toCircuitValue();
     toAddress[idx] = transferTo.toCircuitValue(); 
-    checkEqual(constant(0), mul(isValid, isEqual(tokenContractAddress[0], receiptAddress.toCircuitValue())));
-    checkEqual(constant(0), mul(isValid, isEqual(fromAddress[0], transferFrom.toCircuitValue())));
-    checkEqual(constant(0), mul(isValid, isEqual(toAddress[0], transferTo.toCircuitValue())));
+    checkEqual(constant(1), or(isZero(isValid), isEqual(tokenContractAddress[0], receiptAddress.toCircuitValue())));
+    checkEqual(constant(1), or(isZero(isValid), isEqual(fromAddress[0], transferFrom.toCircuitValue())));
+    checkEqual(constant(1), or(isZero(isValid), isEqual(toAddress[0], transferTo.toCircuitValue())));
 
     totalValue = add(totalValue, mul(isValid, transferValue));    
   }
