@@ -7,3 +7,6 @@
 [submodule "lib/axiom-v2-periphery"]
 	path = lib/axiom-v2-periphery
 	url = https://github.com/axiom-crypto/axiom-v2-periphery
+[submodule "lib/axiom-std"]
+	path = lib/axiom-std
+	url = https://github.com/axiom-crypto/axiom-std
