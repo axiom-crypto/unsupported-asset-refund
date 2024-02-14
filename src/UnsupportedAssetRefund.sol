@@ -7,26 +7,35 @@ import { Ownable } from "@openzeppelin-contracts/access/Ownable.sol";
 import { AxiomV2Client } from "@axiom-crypto/v2-periphery/client/AxiomV2Client.sol";
 import { IUnsupportedAssetRefund } from "./interfaces/IUnsupportedAssetRefund.sol";
 
+/// @title UnsupportedAssetRefund
+/// @notice This contract is used to refund unsupported assets to the user.
 contract UnsupportedAssetRefund is IUnsupportedAssetRefund, AxiomV2Client, Ownable {
-    uint64 public immutable callbackSourceChainId;
+    /// @dev the query schema associated with Axiom query
     bytes32 public axiomCallbackQuerySchema;
 
     /// @dev `lastClaimedId[tokenContractAddress][from][to]` stores the most recently used claimId
     ///      for a transfer of the ERC-20 at `tokenContractAddress` from `from` to `to`.
     mapping(address => mapping(address => mapping(address => uint256))) lastClaimedId;
 
-    constructor(address _axiomV2QueryAddress, uint64 _callbackSourceChainId, bytes32 _axiomCallbackQuerySchema)
+    /// @notice construct a new UnsupportedAssetRefund contract
+    /// @param _axiomV2QueryAddress the address of the AxiomV2Query contract
+    /// @param _axiomCallbackQuerySchema the query schema associated with the Axiom query
+    constructor(address _axiomV2QueryAddress, bytes32 _axiomCallbackQuerySchema)
         AxiomV2Client(_axiomV2QueryAddress)
     {
-        callbackSourceChainId = _callbackSourceChainId;
         axiomCallbackQuerySchema = _axiomCallbackQuerySchema;
     }
 
+    /// @inheritdoc IUnsupportedAssetRefund
     function updateCallbackQuerySchema(bytes32 _axiomCallbackQuerySchema) public onlyOwner {
         axiomCallbackQuerySchema = _axiomCallbackQuerySchema;
         emit AxiomCallbackQuerySchemaUpdated(_axiomCallbackQuerySchema);
     }
 
+    /// @inheritdoc IAxiomV2Client
+    /// @notice Gives a refund to `fromAddress` for each transfer made to `toAddress` from `fromAddress`
+    ///         for the ERC-20 at `tokenContractAddress`.  Checks that the range of `claimId` used in these
+    ///         transfers is valid and that the allowance of the ERC-20 at `tokenContractAddress` is sufficient.
     function _axiomV2Callback(
         uint64, /* sourceChainId */
         address callerAddr,
@@ -63,15 +72,16 @@ contract UnsupportedAssetRefund is IUnsupportedAssetRefund, AxiomV2Client, Ownab
         }
     }
 
+    /// @inheritdoc IAxiomV2Client
     function _validateAxiomV2Call(
         AxiomCallbackType, /* callbackType */
-        uint64 sourceChainId,
+        uint64, /* sourceChainId */
         address, /* caller  */
         bytes32 querySchema,
         uint256, /* queryId */
         bytes calldata /* extraData */
     ) internal virtual override {
-        if (sourceChainId != callbackSourceChainId) {
+        if (sourceChainId != block.chainid) {
             revert SourceChainIdDoesNotMatch();
         }
         if (querySchema != axiomCallbackQuerySchema) {

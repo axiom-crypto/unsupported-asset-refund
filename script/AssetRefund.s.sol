@@ -19,7 +19,6 @@ contract UnsupportedAssetRefundScript is Script {
 
         new UnsupportedAssetRefund(
             AXIOM_V2_QUERY_MOCK_SEPOLIA_ADDR,
-            11155111,
             _querySchema
         );
 

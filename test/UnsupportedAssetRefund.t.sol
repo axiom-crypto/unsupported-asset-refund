@@ -46,7 +46,6 @@ contract UnsupportedAssetRefundTest is AxiomTest {
 
         assetRefund = new UnsupportedAssetRefund(
             axiomV2QueryAddress,
-            uint64(block.chainid),
             querySchema
         );
     }
