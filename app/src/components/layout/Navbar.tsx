@@ -12,7 +12,7 @@ export default function Navbar() {
     <div className="flex flex-row justify-between items-center w-full px-8 py-4 border-b-[1px] border-darkgrey shadow-md">
       <Link href="/" className="text-xl text-white font-mono">
         <div >
-          Asset Refund Example
+        Unsupported Asset Refund
         </div>
       </Link>
       <div className="flex flex-row items-center gap-4 sm:gap-8">
@@ -22,7 +22,7 @@ export default function Navbar() {
         <Link href="https://docs.axiom.xyz/">
           Docs
         </Link>
-        <Link href="https://github.com/bfan05/asset-refund-example">
+        <Link href="https://github.com/axiom-crypto/unsupported-asset-refund">
           Github
         </Link>
         <ConnectWallet />

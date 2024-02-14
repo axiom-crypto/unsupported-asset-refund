@@ -26,11 +26,10 @@ export default async function Home() {
   return (
     <>
       <Title>
-        Asset Refund Example
+        Unsupported Asset Refund
       </Title>
       <div className="text-center">
-        Anyone who has sent UNI token to the specified address on Sepolia testnet is eligible for a
-        refund of their UNI.
+      Under construction: Do not use
       </div>
       <AdvanceStepButton
         label="Generate Proof"
