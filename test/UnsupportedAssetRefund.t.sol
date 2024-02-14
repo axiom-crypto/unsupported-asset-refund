@@ -11,9 +11,10 @@ contract AssetRefundTest is AxiomTest {
     using Axiom for Query;
 
     struct AxiomInput {
-        uint64 blockNumber;
-        uint256 txIdx;
-        uint256 logIdx;
+        uint256 numClaims;
+        uint64[] blockNumber;
+        uint256[] txIdx;
+        uint256[] logIdx;
     }
 
     address public constant UNI_SENDER_ADDR = 0x84F722ec6713E2e645576387a3Cb28cfF6126ac4;
@@ -26,7 +27,7 @@ contract AssetRefundTest is AxiomTest {
         _createSelectForkAndSetupAxiom("sepolia", 5_103_100);
 
         input = AxiomInput({ blockNumber: 5_141_305, txIdx: 44, logIdx: 0 });
-        querySchema = axiomVm.readCircuit("app/axiom/refundEvent.circuit.ts");
+        querySchema = axiomVm.readCircuit("app/axiom/unsupportedAssetRefund.circuit.ts");
 
         assetRefund = new UnsupportedAssetRefund(
             axiomV2QueryAddress,
