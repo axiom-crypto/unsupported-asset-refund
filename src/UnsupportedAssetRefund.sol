@@ -63,7 +63,7 @@ contract UnsupportedAssetRefund is IUnsupportedAssetRefund, AxiomV2Client, Ownab
         uint256, /* queryId */
         bytes calldata /* extraData */
     ) internal virtual override {
-        require(sourceChainId == callbackSourceChainId, "AssetRefund: sourceChainId mismatch");
-        require(querySchema == axiomCallbackQuerySchema, "AssetRefund: querySchema mismatch");
+        require(sourceChainId == callbackSourceChainId, "UnsupportedAssetRefund: sourceChainId mismatch");
+        require(querySchema == axiomCallbackQuerySchema, "UnsupportedAssetRefund: querySchema mismatch");
     }
 }

@@ -7,14 +7,14 @@ import { UnsupportedAssetRefund } from "../src/UnsupportedAssetRefund.sol";
 
 import { MockERC20 } from "./MockERC20.sol";
 
-contract AssetRefundTest is AxiomTest {
+contract UnsupportedAssetRefundTest is AxiomTest {
     using Axiom for Query;
 
     struct AxiomInput {
-        uint256 numClaims;
+        uint64 numClaims;
         uint64[] blockNumber;
-        uint256[] txIdx;
-        uint256[] logIdx;
+        uint64[] txIdx;
+        uint64[] logIdx;
     }
 
     address public constant UNI_SENDER_ADDR = 0x84F722ec6713E2e645576387a3Cb28cfF6126ac4;
@@ -26,7 +26,7 @@ contract AssetRefundTest is AxiomTest {
     function setUp() public {
         _createSelectForkAndSetupAxiom("sepolia", 5_103_100);
 
-        input = AxiomInput({ blockNumber: 5_141_305, txIdx: 44, logIdx: 0 });
+        input = AxiomInput({ numClaims: 1, blockNumber: 5_141_305, txIdx: 44, logIdx: 0 });
         querySchema = axiomVm.readCircuit("app/axiom/unsupportedAssetRefund.circuit.ts");
 
         assetRefund = new UnsupportedAssetRefund(
