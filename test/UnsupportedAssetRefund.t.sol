@@ -46,10 +46,7 @@ contract UnsupportedAssetRefundTest is AxiomTest {
         input = AxiomInput({ numClaims: 1, blockNumbers: blockNumbers, txIdxs: txIdxs, logIdxs: logIdxs });
         querySchema = axiomVm.readCircuit("app/axiom/unsupportedAssetRefund.circuit.ts");
 
-        assetRefund = new UnsupportedAssetRefund(
-            axiomV2QueryAddress,
-            querySchema
-        );
+        assetRefund = new UnsupportedAssetRefund(axiomV2QueryAddress, querySchema);
     }
 
     function test_refund() public {
@@ -61,16 +58,24 @@ contract UnsupportedAssetRefundTest is AxiomTest {
         deal(UNI_ADDR, UNI_RECEIVER_ADDR, 100 * 1e18);
 
         // Create a query to prove that `UNI_SENDER_ADDR` sent UNI to `UNI_RECEIVER_ADDR`
-        Query memory q = query(querySchema, abi.encode(input), address(assetRefund));
+        Query memory q = query(
+            querySchema,
+            abi.encode(input),
+            address(assetRefund),
+            bytes(""),
+            IAxiomV2Query.AxiomV2FeeData({ maxFeePerGas: 25 gwei, callbackGasLimit: 1_000_000, overrideAxiomQueryFee: 0 }),
+            UNI_SENDER_ADDR
+        );
 
-        // Send the query to AxiomV2Query
+        // Send the query to AxiomV2Query, specifying `UNI_SENDER_ADDR` as the sender of the query
+        vm.deal(UNI_SENDER_ADDR, 1 ether);
         q.send();
 
         // record balances before refund
         uint256 balanceBefore = IERC20(UNI_ADDR).balanceOf(UNI_RECEIVER_ADDR);
 
-        // Prank fulfillment from Axiom, specifying `UNI_SENDER_ADDR` as the sender of the query
-        bytes32[] memory results = q.prankFulfill(UNI_SENDER_ADDR);
+        // Prank fulfillment from Axiom
+        bytes32[] memory results = q.prankFulfill();
 
         // record balances after refund
         uint256 balanceAfter = IERC20(UNI_ADDR).balanceOf(UNI_RECEIVER_ADDR);
