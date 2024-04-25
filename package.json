@@ -1,6 +1,6 @@
 {
   "name": "asset-refund-example",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An asset refund example dApp built with Axiom.",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "dependencies": {
-    "@axiom-crypto/client": "2.0.8",
+    "@axiom-crypto/client": "2.0.9",
     "dotenv": "^16.3.2"
   },
   "devDependencies": {
